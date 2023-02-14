@@ -180,18 +180,6 @@ func (options *CreateConfigControllerOptions) run(data *ConfigTemplateValues) er
 	return nil
 }
 
-func hostnameOrNetworkName() string {
-	val := os.Getenv("ZITI_NETWORK_NAME")
-	if val == "" {
-		h, err := os.Hostname()
-		if err != nil {
-			return "localhost"
-		}
-		return h
-	}
-	return val
-}
-
 func SetControllerIdentity(data *ControllerTemplateValues) {
 	SetControllerIdentityCert(data)
 	SetControllerIdentityServerCert(data)
@@ -201,28 +189,28 @@ func SetControllerIdentity(data *ControllerTemplateValues) {
 func SetControllerIdentityCert(c *ControllerTemplateValues) {
 	val := os.Getenv(constants.CtrlIdentityCertVarName)
 	if val == "" {
-		val = workingDir + "/" + hostnameOrNetworkName() + ".cert" // default
+		val = workingDir + "/" + helpers2.HostnameOrNetworkName() + ".cert" // default
 	}
 	c.Identity.Cert = helpers2.NormalizePath(val)
 }
 func SetControllerIdentityServerCert(c *ControllerTemplateValues) {
 	val := os.Getenv(constants.CtrlIdentityServerCertVarName)
 	if val == "" {
-		val = workingDir + "/" + hostnameOrNetworkName() + ".server.chain.cert" // default
+		val = workingDir + "/" + helpers2.HostnameOrNetworkName() + ".server.chain.cert" // default
 	}
 	c.Identity.ServerCert = helpers2.NormalizePath(val)
 }
 func SetControllerIdentityKey(c *ControllerTemplateValues) {
 	val := os.Getenv(constants.CtrlIdentityKeyVarName)
 	if val == "" {
-		val = workingDir + "/" + hostnameOrNetworkName() + ".key" // default
+		val = workingDir + "/" + helpers2.HostnameOrNetworkName() + ".key" // default
 	}
 	c.Identity.Key = helpers2.NormalizePath(val)
 }
 func SetControllerIdentityCA(c *ControllerTemplateValues) {
 	val := os.Getenv(constants.CtrlIdentityCAVarName)
 	if val == "" {
-		val = workingDir + "/" + hostnameOrNetworkName() + ".ca" // default
+		val = workingDir + "/" + helpers2.HostnameOrNetworkName() + ".ca" // default
 	}
 	c.Identity.Ca = helpers2.NormalizePath(val)
 }
@@ -234,7 +222,7 @@ func SetEdgeConfig(data *ControllerTemplateValues) {
 func SetEdgeSigningCert(c *ControllerTemplateValues) {
 	val := os.Getenv(constants.CtrlSigningCertVarName)
 	if val == "" {
-		val = workingDir + "/" + hostnameOrNetworkName() + ".signing.cert" // default
+		val = workingDir + "/" + helpers2.HostnameOrNetworkName() + ".signing.cert" // default
 	}
 	c.EdgeEnrollment.SigningCert = helpers2.NormalizePath(val)
 
@@ -242,7 +230,7 @@ func SetEdgeSigningCert(c *ControllerTemplateValues) {
 func SetEdgeSigningKey(c *ControllerTemplateValues) {
 	val := os.Getenv(constants.CtrlSigningKeyVarName)
 	if val == "" {
-		val = workingDir + "/" + hostnameOrNetworkName() + ".signing.key" // default
+		val = workingDir + "/" + helpers2.HostnameOrNetworkName() + ".signing.key" // default
 	}
 	c.EdgeEnrollment.SigningCertKey = helpers2.NormalizePath(val)
 }

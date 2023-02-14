@@ -55,7 +55,8 @@ func GetZitiHome() (string, error) {
 		// If not set, create a default path of the current working directory
 		workingDir, err := WorkingDir()
 		if err != nil {
-			return "", err
+			// If there is an error just use .
+			workingDir = "."
 		}
 
 		err = os.Setenv(constants.ZitiHomeVarName, workingDir)
@@ -67,6 +68,18 @@ func GetZitiHome() (string, error) {
 	}
 
 	return NormalizePath(retVal), nil
+}
+
+func HostnameOrNetworkName() string {
+	val := os.Getenv("ZITI_NETWORK_NAME")
+	if val == "" {
+		h, err := os.Hostname()
+		if err != nil {
+			return "localhost"
+		}
+		return h
+	}
+	return val
 }
 
 func GetCtrlListenerAddress() (string, error) {

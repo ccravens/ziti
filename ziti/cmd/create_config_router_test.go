@@ -120,16 +120,25 @@ func createRouterConfig(args []string) RouterConfig {
 	return configStruct
 }
 
-func clearOptionsAndTemplateData() {
+func execCreateConfigCommand(args []string, keys map[string]string) {
+	// Setup options
+	clearRouterOptionsAndTemplateData()
+	routerOptions.Output = defaultOutput
+
+	setEnvByMap(keys)
+	// Create and run the CLI command (capture output, otherwise config prints to stdout instead of test results)
+	cmd := NewCmdCreateConfigRouter()
+	cmd.SetArgs(args)
+	_ = captureOutput(func() {
+		_ = cmd.Execute()
+	})
+}
+
+func clearRouterOptionsAndTemplateData() {
 	routerOptions = CreateConfigRouterOptions{}
 	data = &ConfigTemplateValues{}
 
-	// Unset environment variables
-	envVars := getZitiEnvironmentVariables()
-	for i := 0; i < len(envVars); i++ {
-		_ = os.Unsetenv(envVars[i])
-	}
-	_ = os.Unsetenv(constants.ExternalDNSVarName)
+	unsetZitiEnv()
 }
 
 func TestSetZitiRouterIdentityCertDefault(t *testing.T) {
@@ -234,7 +243,7 @@ func TestSetZitiRouterIdentityCACustom(t *testing.T) {
 
 func TestSetZitiRouterIdentitySetsAllIdentitiesAndEdgeRouterRawName(t *testing.T) {
 	// Setup
-	clearOptionsAndTemplateData()
+	clearRouterOptionsAndTemplateData()
 	expectedRawName := "MyEdgeRouterRawName"
 	blank := ""
 	rtv := &RouterTemplateValues{}
@@ -261,7 +270,7 @@ func TestSetZitiRouterIdentitySetsAllIdentitiesAndEdgeRouterRawName(t *testing.T
 
 func TestSetZitiRouterIdentitySetsAllIdentitiesAndEdgeRouterRawNameToHostWhenBlank(t *testing.T) {
 	// Setup
-	clearOptionsAndTemplateData()
+	clearRouterOptionsAndTemplateData()
 	expectedRawName, _ := os.Hostname()
 	blank := ""
 	rtv := &RouterTemplateValues{}

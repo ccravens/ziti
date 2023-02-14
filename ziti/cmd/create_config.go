@@ -96,7 +96,7 @@ type EdgeApiValues struct {
 	APIActivityUpdateBatchSize int
 	APIActivityUpdateInterval  time.Duration
 	SessionTimeout             time.Duration
-	Hostname                   string
+	Address                    string
 	Port                       string
 }
 
@@ -202,16 +202,7 @@ var workingDir string
 var data = &ConfigTemplateValues{}
 
 func init() {
-	zh := os.Getenv("ZITI_HOME")
-	if zh == "" {
-		wd, err := os.Getwd()
-		if wd == "" || err != nil {
-			//on error just use "."
-			workingDir = "."
-		}
-	}
-
-	workingDir = cmdHelper.NormalizePath(zh)
+	workingDir, _ = cmdHelper.GetZitiHome()
 }
 
 // NewCmdCreateConfig creates a command object for the "config" command
@@ -329,7 +320,7 @@ func (data *ConfigTemplateValues) populateConfigValues() {
 	data.Controller.EdgeApi.APIActivityUpdateBatchSize = edge.DefaultEdgeApiActivityUpdateBatchSize
 	data.Controller.EdgeApi.APIActivityUpdateInterval = edge.DefaultEdgeAPIActivityUpdateInterval
 	data.Controller.EdgeApi.SessionTimeout = edge.DefaultEdgeSessionTimeout
-	data.Controller.EdgeApi.Hostname = ctrlEdgeApiAddress
+	data.Controller.EdgeApi.Address = ctrlEdgeApiAddress
 	data.Controller.EdgeApi.Port = ctrlEdgeApiPort
 	data.Controller.EdgeEnrollment.EdgeIdentityDuration = ctrlEdgeIdentityEnrollmentDuration
 	data.Controller.EdgeEnrollment.EdgeRouterDuration = ctrlEdgeRouterEnrollmentDuration

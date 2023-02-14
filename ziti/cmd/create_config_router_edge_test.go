@@ -12,28 +12,8 @@ import (
 var defaultArgs = []string{"edge", "--routerName", "test-router"}
 var testHostname, _ = os.Hostname()
 
-func setEnvByMap[K string, V string](m map[K]V) {
-	for k, v := range m {
-		os.Setenv(string(k), string(v))
-	}
-}
-
-func execCreateConfigCommand(args []string, keys map[string]string) {
-	// Setup options
-	clearOptionsAndTemplateData()
-	routerOptions.Output = defaultOutput
-
-	setEnvByMap(keys)
-	// Create and run the CLI command (capture output, otherwise config prints to stdout instead of test results)
-	cmd := NewCmdCreateConfigRouter()
-	cmd.SetArgs(args)
-	_ = captureOutput(func() {
-		_ = cmd.Execute()
-	})
-}
-
 func TestEdgeRouterAdvertised(t *testing.T) {
-	clearOptionsAndTemplateData()
+	clearRouterOptionsAndTemplateData()
 	routerAdvHostIp := "192.168.10.10"
 	routerAdvHostDns := "controller01.zitinetwork.example.org"
 	keys := map[string]string{
@@ -70,7 +50,7 @@ func TestEdgeRouterAdvertised(t *testing.T) {
 
 func TestTunnelerEnabledByDefault(t *testing.T) {
 	// Setup options
-	clearOptionsAndTemplateData()
+	clearRouterOptionsAndTemplateData()
 	routerOptions.Output = defaultOutput
 
 	// Create and run the CLI command without the tunnel flag
@@ -88,7 +68,7 @@ func TestTunnelerEnabledByDefault(t *testing.T) {
 
 func TestTunnelerNoneMode(t *testing.T) {
 	// Setup options
-	clearOptionsAndTemplateData()
+	clearRouterOptionsAndTemplateData()
 	routerOptions.Output = defaultOutput
 
 	// Create and run the CLI command with the disable tunnel flag
@@ -109,7 +89,7 @@ func TestTunnelerNoneMode(t *testing.T) {
 
 func TestTunnelerHostModeIsDefault(t *testing.T) {
 	// Setup options
-	clearOptionsAndTemplateData()
+	clearRouterOptionsAndTemplateData()
 	routerOptions.Output = defaultOutput
 
 	// Create and run the CLI command without the tunnel flag
@@ -128,7 +108,7 @@ func TestTunnelerHostModeIsDefault(t *testing.T) {
 
 func TestTunnelerTproxyMode(t *testing.T) {
 	// Setup options
-	clearOptionsAndTemplateData()
+	clearRouterOptionsAndTemplateData()
 	routerOptions.Output = defaultOutput
 
 	// Create and run the CLI command without the tunnel flag
@@ -151,7 +131,7 @@ func TestTunnelerInvalidMode(t *testing.T) {
 	expectedErrorMsg := "Unknown tunneler mode [" + invalidMode + "] provided, should be \"" + noneTunMode + "\", \"" + hostTunMode + "\", or \"" + tproxyTunMode + "\""
 
 	// Create the options with both flags set to true
-	clearOptionsAndTemplateData()
+	clearRouterOptionsAndTemplateData()
 	routerOptions.Output = defaultOutput
 	routerOptions.TunnelerMode = invalidMode
 
@@ -161,7 +141,7 @@ func TestTunnelerInvalidMode(t *testing.T) {
 }
 
 func TestPrivateEdgeRouterNotAdvertising(t *testing.T) {
-	clearOptionsAndTemplateData()
+	clearRouterOptionsAndTemplateData()
 
 	// Create and run the CLI command
 	config := createRouterConfig([]string{"edge", "--routerName", "myRouter", "--private"})
@@ -175,7 +155,7 @@ func TestBlankEdgeRouterNameBecomesHostname(t *testing.T) {
 	blank := ""
 
 	// Setup options with blank router name
-	clearOptionsAndTemplateData()
+	clearRouterOptionsAndTemplateData()
 	routerOptions.Output = defaultOutput
 	routerOptions.RouterName = blank
 
@@ -239,7 +219,7 @@ func TestEdgeRouterCannotBeWSSAndPrivate(t *testing.T) {
 	expectedErrorMsg := "Flags for private and wss configs are mutually exclusive. You must choose private or wss, not both"
 
 	// Create the options with both flags set to true
-	clearOptionsAndTemplateData()
+	clearRouterOptionsAndTemplateData()
 	routerOptions.Output = defaultOutput
 	routerOptions.IsPrivate = true
 	routerOptions.WssEnabled = true
@@ -253,7 +233,7 @@ func TestEdgeRouterOutputPathDoesNotExist(t *testing.T) {
 	expectedErrorMsg := "stat /IDoNotExist: no such file or directory"
 
 	// Set the router options
-	clearOptionsAndTemplateData()
+	clearRouterOptionsAndTemplateData()
 	routerOptions.TunnelerMode = defaultTunnelerMode
 	routerOptions.RouterName = "MyEdgeRouter"
 	routerOptions.Output = "/IDoNotExist/MyEdgeRouter.yaml"
@@ -297,7 +277,7 @@ func TestEdgeRouterIPOverrideIsConsumed(t *testing.T) {
 	externalIP := "123.456.78.9"
 
 	// Setup options
-	clearOptionsAndTemplateData()
+	clearRouterOptionsAndTemplateData()
 	routerOptions.Output = defaultOutput
 
 	// Set the env variable to non-empty value

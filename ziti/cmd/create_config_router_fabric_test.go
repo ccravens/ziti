@@ -45,7 +45,7 @@ func TestFabricRouterIPOverrideIsConsumed(t *testing.T) {
 	externalIP := "123.456.78.9"
 
 	// Setup options
-	clearOptionsAndTemplateData()
+	clearRouterOptionsAndTemplateData()
 	routerOptions.Output = defaultOutput
 
 	// Set the env variable to non-empty value
@@ -71,7 +71,7 @@ func TestFabricRouterIPOverrideIsConsumed(t *testing.T) {
 }
 
 func TestFabricRouterHasNoListeners(t *testing.T) {
-	clearOptionsAndTemplateData()
+	clearRouterOptionsAndTemplateData()
 
 	// Create and run the CLI command
 	config := createRouterConfig([]string{"fabric", "--routerName", "myRouter"})
@@ -85,7 +85,7 @@ func TestBlankFabricRouterNameBecomesHostname(t *testing.T) {
 	blank := ""
 
 	// Create the options with empty router name
-	clearOptionsAndTemplateData()
+	clearRouterOptionsAndTemplateData()
 	routerOptions.Output = defaultOutput
 	routerOptions.RouterName = blank
 
@@ -104,7 +104,7 @@ func TestFabricRouterOutputPathDoesNotExist(t *testing.T) {
 	expectedErrorMsg := "stat /IDoNotExist: no such file or directory"
 
 	// Set the router options
-	clearOptionsAndTemplateData()
+	clearRouterOptionsAndTemplateData()
 	routerOptions.RouterName = "MyFabricRouter"
 	routerOptions.Output = "/IDoNotExist/MyFabricRouter.yaml"
 
