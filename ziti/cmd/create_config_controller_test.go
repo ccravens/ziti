@@ -4,6 +4,7 @@ import (
 	"fmt"
 	cmdhelper "github.com/openziti/ziti/ziti/cmd/helpers"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 	"os"
 	"strings"
@@ -125,8 +126,12 @@ func TestControllerOutputPathDoesNotExist(t *testing.T) {
 }
 
 func TestCreateConfigControllerTemplateValues(t *testing.T) {
+
+	// Create and run the CLI command (capture output, otherwise config prints to stdout instead of test results)
+	// This must run first, otherwise the addresses used later won't be correct; this command re-allocates the `data` struct
+	_ = execCreateConfigControllerCommand(nil, nil)
+
 	expectedNonEmptyStringFields := []string{
-		".Controller.Web.BindPoints.AddressAddress",
 		".ZitiHome",
 		".Controller.Identity.Cert",
 		".Controller.Identity.ServerCert",
@@ -152,7 +157,6 @@ func TestCreateConfigControllerTemplateValues(t *testing.T) {
 		".Controller.Web.Options.MaxTLSVersion",
 	}
 	expectedNonEmptyStringValues := []*string{
-		&data.Controller.Web.BindPoints.AddressAddress,
 		&data.ZitiHome,
 		&data.Controller.Identity.Cert,
 		&data.Controller.Identity.ServerCert,
@@ -248,9 +252,6 @@ func TestCreateConfigControllerTemplateValues(t *testing.T) {
 		&data.Controller.EdgeApi.APIActivityUpdateBatchSize,
 	}
 
-	// Create and run the CLI command (capture output, otherwise config prints to stdout instead of test results)
-	_ = execCreateConfigControllerCommand(nil, nil)
-
 	// Check that the expected string template values are not blank
 	for field, value := range expectedNonEmptyStringValues {
 		assert.NotEqualf(t, "", *value, expectedNonEmptyStringFields[field]+" should be a non-blank value")
@@ -276,14 +277,14 @@ func TestCtrlConfigDefaultsWhenUnset(t *testing.T) {
 	t.Run("TestPKIControllerCert", func(t *testing.T) {
 		expectedValue := workingDir + "/" + cmdhelper.HostnameOrNetworkName() + ".cert"
 
-		assert.Equal(t, expectedValue, data.Controller.Identity.Cert)
+		require.Equal(t, expectedValue, data.Controller.Identity.Cert)
 		assert.Equal(t, expectedValue, ctrlConfig.Identity.Cert)
 	})
 
 	t.Run("TestWebAdvertisedAddress", func(t *testing.T) {
 		expectedValue, _ := os.Hostname()
 
-		assert.Equal(t, expectedValue, data.Controller.Web.BindPoints.AddressAddress)
+		require.Equal(t, expectedValue, data.Controller.Web.BindPoints.AddressAddress)
 		assert.Equal(t, expectedValue, strings.Split(ctrlConfig.Web[0].BindPoints[0].Address, ":")[0])
 	})
 }
@@ -299,14 +300,14 @@ func TestCtrlConfigDefaultsWhenBlank(t *testing.T) {
 	t.Run("TestPKIControllerCert", func(t *testing.T) {
 		expectedValue := workingDir + "/" + cmdhelper.HostnameOrNetworkName() + ".cert"
 
-		assert.Equal(t, expectedValue, data.Controller.Identity.Cert)
+		require.Equal(t, expectedValue, data.Controller.Identity.Cert)
 		assert.Equal(t, expectedValue, ctrlConfig.Identity.Cert)
 	})
 
 	t.Run("TestWebAdvertisedAddress", func(t *testing.T) {
 		expectedValue, _ := os.Hostname()
 
-		assert.Equal(t, expectedValue, data.Controller.Web.BindPoints.AddressAddress)
+		require.Equal(t, expectedValue, data.Controller.Web.BindPoints.AddressAddress)
 		assert.Equal(t, expectedValue, strings.Split(ctrlConfig.Web[0].BindPoints[0].Address, ":")[0])
 	})
 }
@@ -319,10 +320,10 @@ func TestZitiCtrlIdentityCert(t *testing.T) {
 
 	t.Run("TestSetCtrlIdentityCertPath", func(t *testing.T) {
 		_ = execCreateConfigControllerCommand(nil, keys)
-		assert.Equal(t, customValue, data.Controller.Web.BindPoints.AddressAddress)
+		assert.Equal(t, customValue, data.Controller.Identity.Cert)
 	})
 
-	t.Run("TestSetCtrlIdentityCertPathInOutput", func(t *testing.T) {
+	t.Run("TestSetCtrlIdentityCertPathInConfig", func(t *testing.T) {
 		ctrlConfig := execCreateConfigControllerCommand(nil, keys)
 		assert.Equal(t, customValue, ctrlConfig.Identity.Cert)
 	})
@@ -345,7 +346,7 @@ func TestAdvertisedBindAddress(t *testing.T) {
 	})
 }
 
-//// Edge Ctrl Listener port should use ZITI_EDGE_CONTROLLER_PORT if it is set
+//// Edge Ctrl Listener port should use ZITI_CTRL_WEB_ADVERTISED_PORT if it is set
 //func TestListenerAddressWhenEdgeCtrlPortAndListenerHostPortNotSet(t *testing.T) {
 //	myPort := "1234"
 //	expectedListenerAddress := "0.0.0.0:" + myPort
@@ -354,7 +355,7 @@ func TestAdvertisedBindAddress(t *testing.T) {
 //	_ = os.Unsetenv("ZITI_CTRL_EDGE_LISTENER_HOST_PORT")
 //
 //	// Set the edge controller port
-//	_ = os.Setenv("ZITI_EDGE_CONTROLLER_PORT", myPort)
+//	_ = os.Setenv("ZITI_CTRL_WEB_ADVERTISED_PORT", myPort)
 //
 //	// Create and run the CLI command (capture output, otherwise config prints to stdout instead of test results)
 //	cmd := NewCmdCreateConfigController()
@@ -374,7 +375,7 @@ func TestAdvertisedBindAddress(t *testing.T) {
 //	_ = os.Setenv("ZITI_CTRL_EDGE_LISTENER_HOST_PORT", expectedListenerAddress)
 //
 //	// Set the edge controller port (this should not show up in the end resulting listener address)
-//	_ = os.Setenv("ZITI_EDGE_CONTROLLER_PORT", myPort)
+//	_ = os.Setenv("ZITI_CTRL_WEB_ADVERTISED_PORT", myPort)
 //
 //	// Create and run the CLI command (capture output, otherwise config prints to stdout instead of test results)
 //	cmd := NewCmdCreateConfigController()
@@ -385,12 +386,12 @@ func TestAdvertisedBindAddress(t *testing.T) {
 //	assert.Equal(t, expectedListenerAddress, data.Controller.Edge.ListenerHostPort)
 //}
 //
-//// Edge Ctrl Advertised Port should update the edge ctrl port to the default when ZITI_EDGE_CONTROLLER_PORT is not set
+//// Edge Ctrl Advertised Port should update the edge ctrl port to the default when ZITI_CTRL_WEB_ADVERTISED_PORT is not set
 //func TestDefaultEdgeCtrlAdvertisedPort(t *testing.T) {
 //	expectedPort := "1280" // Expecting the default port of 1280
 //
 //	// Set a custom value for the host and port
-//	_ = os.Unsetenv("ZITI_EDGE_CONTROLLER_PORT")
+//	_ = os.Unsetenv("ZITI_CTRL_WEB_ADVERTISED_PORT")
 //
 //	// Create and run the CLI command (capture output, otherwise config prints to stdout instead of test results)
 //	cmd := NewCmdCreateConfigController()
@@ -401,12 +402,12 @@ func TestAdvertisedBindAddress(t *testing.T) {
 //	assert.Equal(t, expectedPort, data.Controller.Edge.AdvertisedPort)
 //}
 //
-//// Edge Ctrl Advertised Port should update the edge ctrl port to the custom value when ZITI_EDGE_CONTROLLER_PORT is set
+//// Edge Ctrl Advertised Port should update the edge ctrl port to the custom value when ZITI_CTRL_WEB_ADVERTISED_PORT is set
 //func TestEdgeCtrlAdvertisedPortValueWhenSet(t *testing.T) {
 //	expectedPort := "1234" // Setting a custom port which is not the default value
 //
 //	// Set a custom value for the host and port
-//	_ = os.Setenv("ZITI_EDGE_CONTROLLER_PORT", expectedPort)
+//	_ = os.Setenv("ZITI_CTRL_WEB_ADVERTISED_PORT", expectedPort)
 //
 //	// Create and run the CLI command (capture output, otherwise config prints to stdout instead of test results)
 //	cmd := NewCmdCreateConfigController()
@@ -617,19 +618,11 @@ func TestEdgeRouterAndIdentityEnrollmentDurationTogetherCLI(t *testing.T) {
 	expectedIdentityConfigValue := "60m"
 	expectedRouterConfigValue := "30m"
 
-	// Make sure the env vars are not set
-	_ = os.Unsetenv("ZITI_EDGE_IDENTITY_ENROLLMENT_DURATION")
-	_ = os.Unsetenv("ZITI_EDGE_ROUTER_ENROLLMENT_DURATION")
-
 	// Create and run the CLI command
-	cmd := NewCmdCreateConfigController()
-	cmd.SetArgs([]string{"--routerEnrollmentDuration", cliRouterDurationValue, "--identityEnrollmentDuration", cliIdentityDurationValue})
-	configOutput := captureOutput(func() {
-		_ = cmd.Execute()
-	})
+	args := []string{"--routerEnrollmentDuration", cliRouterDurationValue, "--identityEnrollmentDuration", cliIdentityDurationValue}
+	configStruct := execCreateConfigControllerCommand(args, nil)
 
 	// Expect that the config values are represented correctly
-	configStruct := configToStruct(configOutput)
 	assert.Equal(t, expectedIdentityConfigValue, configStruct.Edge.Enrollment.EdgeIdentity.Duration)
 	assert.Equal(t, expectedRouterConfigValue, configStruct.Edge.Enrollment.EdgeRouter.Duration)
 }
@@ -637,21 +630,17 @@ func TestEdgeRouterAndIdentityEnrollmentDurationTogetherCLI(t *testing.T) {
 func TestEdgeRouterAndIdentityEnrollmentDurationTogetherEnvVar(t *testing.T) {
 	envVarIdentityDurationValue := "120"
 	envVarRouterDurationValue := "60"
-	expectedIdentityConfigValue := "120m"
-	expectedRouterConfigValue := "60m"
-
-	// Set the env vars
-	_ = os.Setenv("ZITI_EDGE_IDENTITY_ENROLLMENT_DURATION", envVarIdentityDurationValue)
-	_ = os.Setenv("ZITI_EDGE_ROUTER_ENROLLMENT_DURATION", envVarRouterDurationValue)
+	expectedIdentityConfigValue := envVarIdentityDurationValue + "m"
+	expectedRouterConfigValue := envVarRouterDurationValue + "m"
 
 	// Create and run the CLI command
-	cmd := NewCmdCreateConfigController()
-	configOutput := captureOutput(func() {
-		_ = cmd.Execute()
-	})
+	keys := map[string]string{
+		"ZITI_EDGE_IDENTITY_ENROLLMENT_DURATION": envVarIdentityDurationValue,
+		"ZITI_EDGE_ROUTER_ENROLLMENT_DURATION":   envVarRouterDurationValue,
+	}
+	configStruct := execCreateConfigControllerCommand(nil, keys)
 
 	// Expect that the config values are represented correctly
-	configStruct := configToStruct(configOutput)
 	assert.Equal(t, expectedIdentityConfigValue, configStruct.Edge.Enrollment.EdgeIdentity.Duration)
 	assert.Equal(t, expectedRouterConfigValue, configStruct.Edge.Enrollment.EdgeRouter.Duration)
 }

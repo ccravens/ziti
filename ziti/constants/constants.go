@@ -41,7 +41,7 @@ const (
 
 	DefaultZitiEdgeRouterPort    = "3022"
 	DefaultCtrlWebAdvertisedPort = "1280"
-	DefaultCtrlListenerHostname  = "0.0.0.0"
+	DefaultCtrlListenerAddress   = "0.0.0.0"
 	DefaultCtrlListenerPort      = "6262"
 	DefaultCtrlMgmtListenerPort  = "10000"
 )

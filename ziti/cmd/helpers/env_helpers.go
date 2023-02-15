@@ -83,7 +83,7 @@ func HostnameOrNetworkName() string {
 }
 
 func GetCtrlListenerAddress() (string, error) {
-	return getValueOrSetAndGetDefault(constants.CtrlListenerAddressVarName, constants.DefaultCtrlListenerHostname)
+	return getValueOrSetAndGetDefault(constants.CtrlListenerAddressVarName, constants.DefaultCtrlListenerAddress)
 }
 
 func GetCtrlListenerPort() (string, error) {
@@ -91,7 +91,7 @@ func GetCtrlListenerPort() (string, error) {
 }
 
 func GetCtrlMgmtAddress() (string, error) {
-	return getValueOrSetAndGetDefault(constants.CtrlMgmtAddressVarName, constants.DefaultCtrlListenerHostname)
+	return getValueOrSetAndGetDefault(constants.CtrlMgmtAddressVarName, constants.DefaultCtrlListenerAddress)
 }
 
 func GetCtrlMgmtPort() (string, error) {

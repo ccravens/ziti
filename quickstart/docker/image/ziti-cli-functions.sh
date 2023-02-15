@@ -1136,7 +1136,7 @@ function createRouterLaunchdFile {
 
     # If router name is not passed as arg, prompt user for input
     echo -e "$(YELLOW "createRouterLaunchdFile requires a router name to be supplied") "
-    default_router_name="${ZITI_EDGE_ROUTER_RAWNAME}"
+    default_router_name="${ZITI_EDGE_ROUTER_NAME}"
     echo -en "Enter router name (${default_router_name}):"
     read -r router_name
 

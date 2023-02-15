@@ -3,7 +3,9 @@ package cmd
 import (
 	"github.com/openziti/ziti/ziti/constants"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -17,30 +19,30 @@ func TestEdgeRouterAdvertised(t *testing.T) {
 	routerAdvHostIp := "192.168.10.10"
 	routerAdvHostDns := "controller01.zitinetwork.example.org"
 	keys := map[string]string{
-		"ZITI_CTRL_PORT":        "80",
-		"ZITI_EDGE_ROUTER_PORT": "443",
+		"ZITI_CTRL_LISTENER_PORT": "80",
+		"ZITI_EDGE_ROUTER_PORT":   "443",
 	}
 	execCreateConfigCommand(defaultArgs, keys)
-	assert.Equal(t, testHostname, data.Router.Edge.AdvertisedHost, nil)
+	require.Equal(t, testHostname, data.Router.Edge.AdvertisedHost, nil)
 
-	keys["ZITI_EDGE_ROUTER_RAWNAME"] = routerAdvHostDns
+	keys["ZITI_EDGE_ROUTER_NAME"] = routerAdvHostDns
 	execCreateConfigCommand(defaultArgs, keys)
-	assert.Equal(t, routerAdvHostDns, data.Router.Edge.AdvertisedHost, nil)
+	require.Equal(t, routerAdvHostDns, data.Router.Edge.AdvertisedHost, nil)
 
-	keys["ZITI_EDGE_ROUTER_RAWNAME"] = ""
+	keys["ZITI_EDGE_ROUTER_NAME"] = ""
 	keys["ZITI_EDGE_ROUTER_IP_OVERRIDE"] = routerAdvHostIp
 	execCreateConfigCommand(defaultArgs, keys)
-	assert.Equal(t, routerAdvHostIp, data.Router.Edge.AdvertisedHost, nil)
+	require.Equal(t, routerAdvHostIp, data.Router.Edge.AdvertisedHost, nil)
 
 	keys["ZITI_EDGE_ROUTER_IP_OVERRIDE"] = ""
 	keys["EXTERNAL_DNS"] = routerAdvHostDns
 	execCreateConfigCommand(defaultArgs, keys)
-	assert.Equal(t, routerAdvHostDns, data.Router.Edge.AdvertisedHost, nil)
+	require.Equal(t, routerAdvHostDns, data.Router.Edge.AdvertisedHost, nil)
 
 	keys["ZITI_EDGE_ROUTER_ADVERTISED_HOST"] = routerAdvHostIp
 	keys["ZITI_EDGE_ROUTER_IP_OVERRIDE"] = routerAdvHostIp
 	execCreateConfigCommand(defaultArgs, keys)
-	assert.Equal(t, routerAdvHostIp, data.Router.Edge.AdvertisedHost, nil)
+	require.Equal(t, routerAdvHostIp, data.Router.Edge.AdvertisedHost, nil)
 
 	keys["ZITI_EDGE_ROUTER_ADVERTISED_HOST"] = routerAdvHostDns
 	keys["EXTERNAL_DNS"] = routerAdvHostDns
@@ -171,7 +173,7 @@ func TestBlankEdgeRouterNameBecomesHostname(t *testing.T) {
 }
 
 func TestDefaultZitiEdgeRouterListenerBindPort(t *testing.T) {
-	expectedDefaultPort := TEST_ROUTER_LISTENER_PORT
+	expectedDefaultPortStr := strconv.Itoa(TestDefaultRouterListenerPort)
 
 	// Make sure the related env vars are unset
 	_ = os.Unsetenv("ZITI_EDGE_ROUTER_LISTENER_BIND_PORT")
@@ -180,14 +182,14 @@ func TestDefaultZitiEdgeRouterListenerBindPort(t *testing.T) {
 	config := createRouterConfig([]string{"edge", "--routerName", "testRouter"})
 
 	// Check that the template data has been updated as expected
-	assert.Equal(t, expectedDefaultPort, data.Router.Edge.ListenerBindPort)
+	assert.Equal(t, expectedDefaultPortStr, data.Router.Edge.ListenerBindPort)
 
 	// Check that the actual config output has the correct port
 	for i := 1; i < len(config.Link.Listeners); i++ {
 		if config.Link.Listeners[i].Binding == "transport" {
 			// Assert Bind and Advertise use Bind port value
-			assert.Equal(t, expectedDefaultPort, strings.Split(config.Link.Listeners[i].Bind, ":")[1])
-			assert.Equal(t, expectedDefaultPort, strings.Split(config.Link.Listeners[i].Address, ":")[1])
+			require.Equal(t, expectedDefaultPortStr, strings.Split(config.Link.Listeners[i].Bind, ":")[1])
+			require.Equal(t, expectedDefaultPortStr, strings.Split(config.Link.Listeners[i].Address, ":")[1])
 			break
 		}
 	}

@@ -4,12 +4,11 @@ import (
 	"github.com/openziti/ziti/ziti/constants"
 	"github.com/stretchr/testify/assert"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
 )
-
-var TEST_ROUTER_LISTENER_PORT = 10080
 
 func TestExecuteCreateConfigRouterFabricHasNonBlankTemplateValues(t *testing.T) {
 	routerName := "MyFabricRouter"
@@ -114,7 +113,7 @@ func TestFabricRouterOutputPathDoesNotExist(t *testing.T) {
 }
 
 func TestDefaultZitiFabricRouterListenerBindPort(t *testing.T) {
-	expectedDefaultPort := TEST_ROUTER_LISTENER_PORT
+	expectedDefaultPortStr := strconv.Itoa(TestDefaultRouterListenerPort)
 
 	// Make sure the related env vars are unset
 	_ = os.Unsetenv("ZITI_EDGE_ROUTER_LISTENER_BIND_PORT")
@@ -123,14 +122,14 @@ func TestDefaultZitiFabricRouterListenerBindPort(t *testing.T) {
 	config := createRouterConfig([]string{"fabric", "--routerName", "testRouter"})
 
 	// Check that the template data has been updated as expected
-	assert.Equal(t, expectedDefaultPort, data.Router.Edge.ListenerBindPort)
+	assert.Equal(t, expectedDefaultPortStr, data.Router.Edge.ListenerBindPort)
 
 	// Check that the actual config output has the correct port
 	for i := 1; i < len(config.Link.Listeners); i++ {
 		if config.Link.Listeners[i].Binding == "transport" {
 			// Assert Bind and Advertise use Bind port value
-			assert.Equal(t, expectedDefaultPort, strings.Split(config.Link.Listeners[i].Bind, ":")[1])
-			assert.Equal(t, expectedDefaultPort, strings.Split(config.Link.Listeners[i].Address, ":")[1])
+			assert.Equal(t, expectedDefaultPortStr, strings.Split(config.Link.Listeners[i].Bind, ":")[1])
+			assert.Equal(t, expectedDefaultPortStr, strings.Split(config.Link.Listeners[i].Address, ":")[1])
 			break
 		}
 	}

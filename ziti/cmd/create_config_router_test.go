@@ -9,6 +9,9 @@ import (
 	"testing"
 )
 
+// TEST constants
+var TestDefaultRouterListenerPort = 10080
+
 /* BEGIN Controller config template structure */
 
 type RouterConfig struct {
