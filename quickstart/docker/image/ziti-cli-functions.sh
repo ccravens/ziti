@@ -63,41 +63,60 @@ function _get_file_overwrite_permission() {
   fi
 }
 
+# removes duplicate strings in a list
+function _dedupe_list {
+  local list delimiter retVal
+  list=${1-}
+  if [[ "${list}" == "" ]]; then
+    return 1
+  fi
+  delimiter=${2-}
+  if [[ "${delimiter}" == "" ]]; then
+    delimiter=","
+  fi
+
+  echo "${list}" | tr "'${delimiter}'" '\n' | sort -u | xargs
+}
+
 function _pki_client_server {
-  local retVal allow_list ZITI_CA_NAME_local ip_local file_name
+  local retVal dns_allow_list ZITI_CA_NAME_local ip_allow_list file_name
   _check_env_variable ZITI_PKI ZITI_BIN_DIR
   retVal=$?
   if [[ "${retVal}" != 0 ]]; then
     return 1
   fi
-  allow_list=${1-}
+  dns_allow_list=${1-}
   ZITI_CA_NAME_local=$2
-  ip_local=$3
+  ip_allow_list=$3
   file_name=$4
 
-  if [[ "${ip_local}" == "" ]]; then
-    ip_local="127.0.0.1"
+  if [[ "${ip_allow_list}" == "" ]]; then
+    ip_allow_list="127.0.0.1"
   fi
 
+  # Dedupe the lists
+  dns_allow_list=$(_dedupe_list "${dns_allow_list}")
+  ip_allow_list=$(_dedupe_list "${ip_allow_list}")
+
   if ! test -f "${ZITI_PKI}/${ZITI_CA_NAME_local}/keys/${file_name}-server.key"; then
-    echo "Creating server cert from ca: ${ZITI_CA_NAME_local} for ${allow_list} / ${ip_local}"
+    echo "Creating server cert from ca: ${ZITI_CA_NAME_local} for ${dns_allow_list} / ${ip_allow_list}"
     "${ZITI_BIN_DIR-}/ziti" pki create server --pki-root="${ZITI_PKI}" --ca-name "${ZITI_CA_NAME_local}" \
           --server-file "${file_name}-server" \
-          --dns "${allow_list}" --ip "${ip_local}" \
+          --dns "${dns_allow_list}" --ip "${ip_allow_list}" \
           --server-name "${file_name} server certificate"
   else
-    echo "Creating server cert from ca: ${ZITI_CA_NAME_local} for ${allow_list}"
+    echo "Creating server cert from ca: ${ZITI_CA_NAME_local} for ${dns_allow_list}"
     echo "key exists"
   fi
 
   if ! test -f "${ZITI_PKI}/${ZITI_CA_NAME_local}/keys/${file_name}-client.key"; then
-    echo "Creating client cert from ca: ${ZITI_CA_NAME_local} for ${allow_list}"
+    echo "Creating client cert from ca: ${ZITI_CA_NAME_local} for ${dns_allow_list}"
     "${ZITI_BIN_DIR-}/ziti" pki create client --pki-root="${ZITI_PKI}" --ca-name "${ZITI_CA_NAME_local}" \
           --client-file "${file_name}-client" \
           --key-file "${file_name}-server" \
           --client-name "${file_name}"
   else
-    echo "Creating client cert from ca: ${ZITI_CA_NAME_local} for ${allow_list}"
+    echo "Creating client cert from ca: ${ZITI_CA_NAME_local} for ${dns_allow_list}"
     echo "key exists"
   fi
   echo " "
@@ -285,7 +304,7 @@ function setupEnvironment {
   if [[ "${ZITI_CTRL_LISTENER_PORT-}" == "" ]]; then export ZITI_CTRL_LISTENER_PORT="6262"; fi
   if [[ "${ZITI_CTRL_EDGE_ADVERTISED_PORT-}" == "" ]]; then export ZITI_CTRL_EDGE_ADVERTISED_PORT="1280"; fi
   if [[ "${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS-}" == "" ]]; then export ZITI_CTRL_EDGE_ADVERTISED_ADDRESS="${ZITI_NETWORK-}"; fi
-  if [[ "${ZITI_CTRL_ROOTCA_NAME-}" == "" ]]; then export ZITI_CTRL_ROOTCA_NAME="${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS}-root-ca"; fi
+  if [[ "${ZITI_PKI_CTRL_ROOTCA_NAME-}" == "" ]]; then export ZITI_PKI_CTRL_ROOTCA_NAME="${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS}-root-ca"; fi
   if [[ "${ZITI_PKI_CTRL_INTERMEDIATE_NAME-}" == "" ]]; then export ZITI_PKI_CTRL_INTERMEDIATE_NAME="${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS}-intermediate"; fi
   if [[ "${ZITI_PKI_CTRL_EDGE_ROOTCA_NAME-}" == "" ]]; then export ZITI_PKI_CTRL_EDGE_ROOTCA_NAME="${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS}-root-ca"; fi
   if [[ "${ZITI_PKI_CTRL_EDGE_INTERMEDATE_NAME-}" == "" ]]; then export ZITI_PKI_CTRL_EDGE_INTERMEDATE_NAME="${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS}-intermediate"; fi
@@ -611,7 +630,7 @@ function getZiti {
 # Create a custom PKI
 function createPki {
   local retVal pki_allow_list_dns pki_allow_list_ip ZITI_SPURIOUS_INTERMEDIATE
-  _check_env_variable ZITI_CTRL_ROOTCA_NAME ZITI_PKI_CTRL_EDGE_ROOTCA_NAME ZITI_PKI_SIGNER_ROOTCA_NAME \
+  _check_env_variable ZITI_PKI_CTRL_ROOTCA_NAME ZITI_PKI_CTRL_EDGE_ROOTCA_NAME ZITI_PKI_SIGNER_ROOTCA_NAME \
                       ZITI_PKI_SIGNER_INTERMEDIATE_NAME ZITI_PKI_CTRL_INTERMEDIATE_NAME \
                       ZITI_PKI_CTRL_EDGE_INTERMEDATE_NAME
   retVal=$?
@@ -620,24 +639,26 @@ function createPki {
   fi
   echo "Generating PKI"
 
-  _pki_create_ca "${ZITI_CTRL_ROOTCA_NAME}"
+  _pki_create_ca "${ZITI_PKI_CTRL_ROOTCA_NAME}"
   _pki_create_ca "${ZITI_PKI_CTRL_EDGE_ROOTCA_NAME}"
   _pki_create_ca "${ZITI_PKI_SIGNER_ROOTCA_NAME}"
 
   ZITI_SPURIOUS_INTERMEDIATE="${ZITI_PKI_SIGNER_INTERMEDIATE_NAME}_spurious_intermediate"
-  _pki_create_intermediate "${ZITI_CTRL_ROOTCA_NAME}" "${ZITI_PKI_CTRL_INTERMEDIATE_NAME}" 1
+  _pki_create_intermediate "${ZITI_PKI_CTRL_ROOTCA_NAME}" "${ZITI_PKI_CTRL_INTERMEDIATE_NAME}" 1
   _pki_create_intermediate "${ZITI_PKI_CTRL_EDGE_ROOTCA_NAME}" "${ZITI_PKI_CTRL_EDGE_INTERMEDATE_NAME}" 1
   _pki_create_intermediate "${ZITI_PKI_SIGNER_ROOTCA_NAME}" "${ZITI_SPURIOUS_INTERMEDIATE}" 2
   _pki_create_intermediate "${ZITI_SPURIOUS_INTERMEDIATE}" "${ZITI_PKI_SIGNER_INTERMEDIATE_NAME}" 1
 
   pki_allow_list_dns="${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS},localhost,${ZITI_NETWORK}"
   if [[ "${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS}" != "" ]]; then pki_allow_list_dns="${pki_allow_list_dns},${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS}"; fi
-  if [[ "${EXTERNAL_DNS}" != "" ]]; then pki_allow_list_dns="${pki_allow_list_dns},${EXTERNAL_DNS}"; fi
+  if [[ "${EXTERNAL_DNS}" != "${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS}" ]]; then pki_allow_list_dns="${pki_allow_list_dns},${EXTERNAL_DNS}"; fi
   pki_allow_list_ip="127.0.0.1"
   if [[ "${ZITI_EDGE_CONTROLLER_IP_OVERRIDE}" != "" ]]; then pki_allow_list_ip="${pki_allow_list_ip},${ZITI_EDGE_CONTROLLER_IP_OVERRIDE}"; fi
   if [[ "${EXTERNAL_IP}" != "" ]]; then pki_allow_list_ip="${pki_allow_list_ip},${EXTERNAL_IP}"; fi
 
-  _pki_client_server "${pki_allow_list_dns}" "${ZITI_PKI_CTRL_INTERMEDIATE_NAME}" "${pki_allow_list_ip}" "${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS}"
+  # TODO: Remove (adding dupes on purpose)
+  pki_allow_list_dns="${pki_allow_list_dns},${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS},localhost,${ZITI_NETWORK}"
+  _pki_client_server "${pki_allow_list_dns}" "${ZITI_PKI_CTRL_INTERMEDIATE_NAME}" "${pki_allow_list_ip}"
   echo -e "$(GREEN "PKI generated successfully")"
   echo -e ""
 }
