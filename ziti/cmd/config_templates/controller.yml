@@ -77,18 +77,6 @@ ctrl:
   #connectTimeoutMs:       {{ .Controller.Ctrl.DefaultConnectTimeout.Milliseconds }}
   listener:             tls:{{ .Controller.Ctrl.ListenerAddress }}:{{ .Controller.Ctrl.ListenerPort }}
 
-# the endpoint that management tools connect to the controller over.
-mgmt:
-  #options:
-  # (optional) settings
-  # set the maximum number of connect requests that are buffered and waiting to be acknowledged ({{ .Controller.Mgmt.MinQueuedConnects }} to {{ .Controller.Mgmt.MaxQueuedConnects }}, default {{ .Controller.Mgmt.DefaultQueuedConnects }})
-  #maxQueuedConnects:      {{ .Controller.Mgmt.DefaultQueuedConnects }}
-  # the maximum number of connects that have  begun hello synchronization ({{ .Controller.Mgmt.MinOutstandingConnects }} to {{ .Controller.Mgmt.MaxOutstandingConnects }}, default {{ .Controller.Mgmt.DefaultOutstandingConnects }})
-  #maxOutstandingConnects: {{ .Controller.Mgmt.DefaultOutstandingConnects }}
-  # the number of milliseconds to wait before a hello synchronization fails and closes the connection ({{ .Controller.Mgmt.MinConnectTimeout.Milliseconds }}ms to {{ .Controller.Mgmt.MaxConnectTimeout.Milliseconds }}ms, default: {{ .Controller.Mgmt.DefaultConnectTimeout.Milliseconds }}ms)
-  #connectTimeoutMs:       {{ .Controller.Mgmt.DefaultConnectTimeout.Milliseconds }}
-  listener:             tls:{{ .Controller.Mgmt.ListenerAddress }}:{{ .Controller.Mgmt.ListenerPort }}
-
 #metrics:
 #  influxdb:
 #    url:                http://localhost:8086

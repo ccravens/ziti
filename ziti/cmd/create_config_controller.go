@@ -72,7 +72,6 @@ type CreateConfigControllerOptions struct {
 	CreateConfigOptions
 
 	CtrlPort                       string
-	MgmtListener                   string
 	EdgeIdentityEnrollmentDuration time.Duration
 	EdgeRouterEnrollmentDuration   time.Duration
 }
@@ -187,28 +186,28 @@ func SetControllerIdentity(data *ControllerTemplateValues) {
 	SetControllerIdentityCA(data)
 }
 func SetControllerIdentityCert(c *ControllerTemplateValues) {
-	val := os.Getenv(constants.CtrlIdentityCertVarName)
+	val := os.Getenv(constants.PkiCtrlCertVarName)
 	if val == "" {
 		val = workingDir + "/" + helpers2.HostnameOrNetworkName() + ".cert" // default
 	}
 	c.Identity.Cert = helpers2.NormalizePath(val)
 }
 func SetControllerIdentityServerCert(c *ControllerTemplateValues) {
-	val := os.Getenv(constants.CtrlIdentityServerCertVarName)
+	val := os.Getenv(constants.PkiCtrlServerCertVarName)
 	if val == "" {
 		val = workingDir + "/" + helpers2.HostnameOrNetworkName() + ".server.chain.cert" // default
 	}
 	c.Identity.ServerCert = helpers2.NormalizePath(val)
 }
 func SetControllerIdentityKey(c *ControllerTemplateValues) {
-	val := os.Getenv(constants.CtrlIdentityKeyVarName)
+	val := os.Getenv(constants.PkiCtrlKeyVarName)
 	if val == "" {
 		val = workingDir + "/" + helpers2.HostnameOrNetworkName() + ".key" // default
 	}
 	c.Identity.Key = helpers2.NormalizePath(val)
 }
 func SetControllerIdentityCA(c *ControllerTemplateValues) {
-	val := os.Getenv(constants.CtrlIdentityCAVarName)
+	val := os.Getenv(constants.PkiCtrlCAVarName)
 	if val == "" {
 		val = workingDir + "/" + helpers2.HostnameOrNetworkName() + ".ca" // default
 	}
@@ -220,7 +219,7 @@ func SetEdgeConfig(data *ControllerTemplateValues) {
 	SetEdgeSigningKey(data)
 }
 func SetEdgeSigningCert(c *ControllerTemplateValues) {
-	val := os.Getenv(constants.CtrlSigningCertVarName)
+	val := os.Getenv(constants.PkiSignerCertVarName)
 	if val == "" {
 		val = workingDir + "/" + helpers2.HostnameOrNetworkName() + ".signing.cert" // default
 	}
@@ -228,7 +227,7 @@ func SetEdgeSigningCert(c *ControllerTemplateValues) {
 
 }
 func SetEdgeSigningKey(c *ControllerTemplateValues) {
-	val := os.Getenv(constants.CtrlSigningKeyVarName)
+	val := os.Getenv(constants.PkiSignerKeyVarName)
 	if val == "" {
 		val = workingDir + "/" + helpers2.HostnameOrNetworkName() + ".signing.key" // default
 	}
@@ -242,28 +241,28 @@ func SetWebConfig(data *ControllerTemplateValues) {
 	SetWebIdentityCA(data)
 }
 func SetWebIdentityCert(c *ControllerTemplateValues) {
-	val := os.Getenv(constants.CtrlWebIdentityCertVarName)
+	val := os.Getenv(constants.CtrlPkiEdgeCertVarName)
 	if val == "" {
 		val = c.Identity.Cert //default
 	}
 	c.Web.Identity.Cert = helpers2.NormalizePath(val)
 }
 func SetWebIdentityServerCert(c *ControllerTemplateValues) {
-	val := os.Getenv(constants.CtrlWebIdentityServerCertVarName)
+	val := os.Getenv(constants.CtrlPkiEdgeServerCertVarName)
 	if val == "" {
 		val = c.Identity.ServerCert //default
 	}
 	c.Web.Identity.ServerCert = helpers2.NormalizePath(val)
 }
 func SetWebIdentityKey(c *ControllerTemplateValues) {
-	val := os.Getenv(constants.CtrlWebIdentityKeyVarName)
+	val := os.Getenv(constants.CtrlPkiEdgeKeyVarName)
 	if val == "" {
 		val = c.Identity.Key //default
 	}
 	c.Web.Identity.Key = helpers2.NormalizePath(val)
 }
 func SetWebIdentityCA(c *ControllerTemplateValues) {
-	val := os.Getenv(constants.CtrlWebIdentityCAVarName)
+	val := os.Getenv(constants.CtrlPkiEdgeCAVarName)
 	if val == "" {
 		val = c.Identity.Ca //default
 	}

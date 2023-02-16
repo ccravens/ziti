@@ -1,19 +1,19 @@
 #!/bin/bash
-echo "ZITI_CTRL_WEB_ADVERTISED_ADDRESS is ${ZITI_CTRL_WEB_ADVERTISED_ADDRESS}"
+echo "ZITI_CTRL_EDGE_ADVERTISED_ADDRESS is ${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS}"
 ziti_controller_cfg="${ZITI_HOME}/ziti-edge-controller.yaml"
 
-export ZITI_CTRL_WEB_ADVERTISED_ADDRESS=ziti-edge-controller
+export ZITI_CTRL_EDGE_ADVERTISED_ADDRESS=ziti-edge-controller
 
 . "${ZITI_SCRIPTS}/ziti-cli-functions.sh"
 
-echo "ZITI_CTRL_WEB_ADVERTISED_ADDRESS is ${ZITI_CTRL_WEB_ADVERTISED_ADDRESS}"
+echo "ZITI_CTRL_EDGE_ADVERTISED_ADDRESS is ${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS}"
 setupEnvironment
 persistEnvironmentValues
 . ${ZITI_HOME}/ziti.env
-echo "ZITI_CTRL_WEB_ADVERTISED_ADDRESS is ${ZITI_CTRL_WEB_ADVERTISED_ADDRESS}"
+echo "ZITI_CTRL_EDGE_ADVERTISED_ADDRESS is ${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS}"
 # create pki
 createPki
-echo "ZITI_CTRL_WEB_ADVERTISED_ADDRESS is ${ZITI_CTRL_WEB_ADVERTISED_ADDRESS}"
+echo "ZITI_CTRL_EDGE_ADVERTISED_ADDRESS is ${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS}"
 if [ ! -f "${ziti_controller_cfg}" ]; then
   echo " "
   echo "${ziti_controller_cfg} doesn't exist. Generating config file"

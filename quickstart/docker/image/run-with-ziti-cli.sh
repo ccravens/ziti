@@ -36,7 +36,7 @@ sleep 1
 
 . "${ZITI_SCRIPTS}/ziti-cli-functions.sh"
 
-if [[ "${ZITI_CTRL_WEB_ADVERTISED_ADDRESS-}" == "" ]]; then export ZITI_CTRL_WEB_ADVERTISED_ADDRESS="ziti-edge-controller"; fi
+if [[ "${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS-}" == "" ]]; then export ZITI_CTRL_EDGE_ADVERTISED_ADDRESS="ziti-edge-controller"; fi
 if [[ "${ZITI_EDGE_ROUTER_NAME-}" == "" ]]; then export ZITI_EDGE_ROUTER_NAME="${ZITI_NETWORK-}-edge-router"; fi
 if [[ "${ZITI_EDGE_ROUTER_PORT-}" == "" ]]; then export ZITI_EDGE_ROUTER_PORT="3022"; fi
 if [[ "${ZITI_EDGE_ROUTER_HOSTNAME}" == "" ]]; then export ZITI_EDGE_ROUTER_HOSTNAME="${ZITI_EDGE_ROUTER_NAME}${ZITI_DOMAIN_SUFFIX}"; fi

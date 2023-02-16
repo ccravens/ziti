@@ -19,7 +19,6 @@ type ControllerConfig struct {
 	Db           string       `yaml:"db"`
 	Identity     Identity     `yaml:"identity"`
 	Ctrl         Ctrl         `yaml:"ctrl"`
-	Mgmt         Mgmt         `yaml:"mgmt"`
 	HealthChecks HealthChecks `yaml:"healthChecks"`
 	Edge         Edge         `yaml:"edge"`
 	Web          []Web        `yaml:"web"`
@@ -33,10 +32,6 @@ type Identity struct {
 }
 
 type Ctrl struct {
-	Listener string `yaml:"listener"`
-}
-
-type Mgmt struct {
 	Listener string `yaml:"listener"`
 }
 
@@ -139,8 +134,6 @@ func TestCreateConfigControllerTemplateValues(t *testing.T) {
 		".Controller.Identity.Ca",
 		".Controller.Ctrl.ListenerAddress",
 		".Controller.Ctrl.ListenerPort",
-		".Controller.Mgmt.ListenerAddress",
-		".Controller.Mgmt.ListenerPort",
 		".Controller.EdgeApi.Address",
 		".Controller.EdgeApi.Port",
 		".Controller.EdgeEnrollment.SigningCert",
@@ -164,8 +157,6 @@ func TestCreateConfigControllerTemplateValues(t *testing.T) {
 		&data.Controller.Identity.Ca,
 		&data.Controller.Ctrl.ListenerAddress,
 		&data.Controller.Ctrl.ListenerPort,
-		&data.Controller.Mgmt.ListenerAddress,
-		&data.Controller.Mgmt.ListenerPort,
 		&data.Controller.EdgeApi.Address,
 		&data.Controller.EdgeApi.Port,
 		&data.Controller.EdgeEnrollment.SigningCert,
@@ -186,9 +177,6 @@ func TestCreateConfigControllerTemplateValues(t *testing.T) {
 		".Controller.Ctrl.MinConnectTimeout",
 		".Controller.Ctrl.MaxConnectTimeout",
 		".Controller.Ctrl.DefaultConnectTimeout",
-		".Controller.Mgmt.MinConnectTimeout",
-		".Controller.Mgmt.MaxConnectTimeout",
-		".Controller.Mgmt.DefaultConnectTimeout",
 		".Controller.HealthChecks.Interval",
 		".Controller.HealthChecks.Timeout",
 		".Controller.HealthChecks.InitialDelay",
@@ -207,9 +195,6 @@ func TestCreateConfigControllerTemplateValues(t *testing.T) {
 		&data.Controller.Ctrl.MinConnectTimeout,
 		&data.Controller.Ctrl.MaxConnectTimeout,
 		&data.Controller.Ctrl.DefaultConnectTimeout,
-		&data.Controller.Mgmt.MinConnectTimeout,
-		&data.Controller.Mgmt.MaxConnectTimeout,
-		&data.Controller.Mgmt.DefaultConnectTimeout,
 		&data.Controller.HealthChecks.Interval,
 		&data.Controller.HealthChecks.Timeout,
 		&data.Controller.HealthChecks.InitialDelay,
@@ -229,12 +214,6 @@ func TestCreateConfigControllerTemplateValues(t *testing.T) {
 		".Controller.Ctrl.MinOutstandingConnects",
 		".Controller.Ctrl.MaxOutstandingConnects",
 		".Controller.Ctrl.DefaultOutstandingConnects",
-		".Controller.Mgmt.MinQueuedConnects",
-		".Controller.Mgmt.MaxQueuedConnects",
-		".Controller.Mgmt.DefaultQueuedConnects",
-		".Controller.Mgmt.MinOutstandingConnects",
-		".Controller.Mgmt.MaxOutstandingConnects",
-		".Controller.Mgmt.DefaultOutstandingConnects",
 		".Controller.EdgeApi.APIActivityUpdateBatchSize",
 	}
 
@@ -243,12 +222,6 @@ func TestCreateConfigControllerTemplateValues(t *testing.T) {
 		&data.Controller.Ctrl.MinOutstandingConnects,
 		&data.Controller.Ctrl.MaxOutstandingConnects,
 		&data.Controller.Ctrl.DefaultOutstandingConnects,
-		&data.Controller.Mgmt.MinQueuedConnects,
-		&data.Controller.Mgmt.MaxQueuedConnects,
-		&data.Controller.Mgmt.DefaultQueuedConnects,
-		&data.Controller.Mgmt.MinOutstandingConnects,
-		&data.Controller.Mgmt.MaxOutstandingConnects,
-		&data.Controller.Mgmt.DefaultOutstandingConnects,
 		&data.Controller.EdgeApi.APIActivityUpdateBatchSize,
 	}
 
@@ -281,7 +254,7 @@ func TestCtrlConfigDefaultsWhenUnset(t *testing.T) {
 		assert.Equal(t, expectedValue, ctrlConfig.Identity.Cert)
 	})
 
-	t.Run("TestWebAdvertisedAddress", func(t *testing.T) {
+	t.Run("TestEdgeAdvertisedAddress", func(t *testing.T) {
 		expectedValue, _ := os.Hostname()
 
 		require.Equal(t, expectedValue, data.Controller.Web.BindPoints.AddressAddress)
@@ -291,8 +264,8 @@ func TestCtrlConfigDefaultsWhenUnset(t *testing.T) {
 
 func TestCtrlConfigDefaultsWhenBlank(t *testing.T) {
 	keys := map[string]string{
-		"ZITI_PKI_CTRL_CERT":               "",
-		"ZITI_CTRL_WEB_ADVERTISED_ADDRESS": "",
+		"ZITI_PKI_CTRL_CERT":                "",
+		"ZITI_CTRL_EDGE_ADVERTISED_ADDRESS": "",
 	}
 	// run the config
 	ctrlConfig := execCreateConfigControllerCommand(nil, keys)
@@ -304,7 +277,7 @@ func TestCtrlConfigDefaultsWhenBlank(t *testing.T) {
 		assert.Equal(t, expectedValue, ctrlConfig.Identity.Cert)
 	})
 
-	t.Run("TestWebAdvertisedAddress", func(t *testing.T) {
+	t.Run("TestEdgeAdvertisedAddress", func(t *testing.T) {
 		expectedValue, _ := os.Hostname()
 
 		require.Equal(t, expectedValue, data.Controller.Web.BindPoints.AddressAddress)
@@ -332,7 +305,7 @@ func TestZitiCtrlIdentityCert(t *testing.T) {
 func TestAdvertisedBindAddress(t *testing.T) {
 	customValue := "123.456.7.8"
 	keys := map[string]string{
-		"ZITI_CTRL_WEB_ADVERTISED_ADDRESS": customValue,
+		"ZITI_CTRL_EDGE_ADVERTISED_ADDRESS": customValue,
 	}
 
 	t.Run("TestSetAdvertisedBindAddress", func(t *testing.T) {
@@ -346,7 +319,7 @@ func TestAdvertisedBindAddress(t *testing.T) {
 	})
 }
 
-//// Edge Ctrl Listener port should use ZITI_CTRL_WEB_ADVERTISED_PORT if it is set
+//// Edge Ctrl Listener port should use ZITI_CTRL_EDGE_ADVERTISED_PORT if it is set
 //func TestListenerAddressWhenEdgeCtrlPortAndListenerHostPortNotSet(t *testing.T) {
 //	myPort := "1234"
 //	expectedListenerAddress := "0.0.0.0:" + myPort
@@ -355,7 +328,7 @@ func TestAdvertisedBindAddress(t *testing.T) {
 //	_ = os.Unsetenv("ZITI_CTRL_EDGE_LISTENER_HOST_PORT")
 //
 //	// Set the edge controller port
-//	_ = os.Setenv("ZITI_CTRL_WEB_ADVERTISED_PORT", myPort)
+//	_ = os.Setenv("ZITI_CTRL_EDGE_ADVERTISED_PORT", myPort)
 //
 //	// Create and run the CLI command (capture output, otherwise config prints to stdout instead of test results)
 //	cmd := NewCmdCreateConfigController()
@@ -375,7 +348,7 @@ func TestAdvertisedBindAddress(t *testing.T) {
 //	_ = os.Setenv("ZITI_CTRL_EDGE_LISTENER_HOST_PORT", expectedListenerAddress)
 //
 //	// Set the edge controller port (this should not show up in the end resulting listener address)
-//	_ = os.Setenv("ZITI_CTRL_WEB_ADVERTISED_PORT", myPort)
+//	_ = os.Setenv("ZITI_CTRL_EDGE_ADVERTISED_PORT", myPort)
 //
 //	// Create and run the CLI command (capture output, otherwise config prints to stdout instead of test results)
 //	cmd := NewCmdCreateConfigController()
@@ -386,12 +359,12 @@ func TestAdvertisedBindAddress(t *testing.T) {
 //	assert.Equal(t, expectedListenerAddress, data.Controller.Edge.ListenerHostPort)
 //}
 //
-//// Edge Ctrl Advertised Port should update the edge ctrl port to the default when ZITI_CTRL_WEB_ADVERTISED_PORT is not set
+//// Edge Ctrl Advertised Port should update the edge ctrl port to the default when ZITI_CTRL_EDGE_ADVERTISED_PORT is not set
 //func TestDefaultEdgeCtrlAdvertisedPort(t *testing.T) {
 //	expectedPort := "1280" // Expecting the default port of 1280
 //
 //	// Set a custom value for the host and port
-//	_ = os.Unsetenv("ZITI_CTRL_WEB_ADVERTISED_PORT")
+//	_ = os.Unsetenv("ZITI_CTRL_EDGE_ADVERTISED_PORT")
 //
 //	// Create and run the CLI command (capture output, otherwise config prints to stdout instead of test results)
 //	cmd := NewCmdCreateConfigController()
@@ -402,12 +375,12 @@ func TestAdvertisedBindAddress(t *testing.T) {
 //	assert.Equal(t, expectedPort, data.Controller.Edge.AdvertisedPort)
 //}
 //
-//// Edge Ctrl Advertised Port should update the edge ctrl port to the custom value when ZITI_CTRL_WEB_ADVERTISED_PORT is set
+//// Edge Ctrl Advertised Port should update the edge ctrl port to the custom value when ZITI_CTRL_EDGE_ADVERTISED_PORT is set
 //func TestEdgeCtrlAdvertisedPortValueWhenSet(t *testing.T) {
 //	expectedPort := "1234" // Setting a custom port which is not the default value
 //
 //	// Set a custom value for the host and port
-//	_ = os.Setenv("ZITI_CTRL_WEB_ADVERTISED_PORT", expectedPort)
+//	_ = os.Setenv("ZITI_CTRL_EDGE_ADVERTISED_PORT", expectedPort)
 //
 //	// Create and run the CLI command (capture output, otherwise config prints to stdout instead of test results)
 //	cmd := NewCmdCreateConfigController()

@@ -90,19 +90,11 @@ func GetCtrlListenerPort() (string, error) {
 	return getValueOrSetAndGetDefault(constants.CtrlListenerPortVarName, constants.DefaultCtrlListenerPort)
 }
 
-func GetCtrlMgmtAddress() (string, error) {
-	return getValueOrSetAndGetDefault(constants.CtrlMgmtAddressVarName, constants.DefaultCtrlListenerAddress)
-}
-
-func GetCtrlMgmtPort() (string, error) {
-	return getValueOrSetAndGetDefault(constants.CtrlMgmtPortVarName, constants.DefaultCtrlMgmtListenerPort)
-}
-
 func GetCtrlEdgeApiAddress() (string, error) {
-	// Get the controller's web advertised hostname to use as the default
-	defaultHostname, err := GetCtrlWebAdvertisedAddress()
+	// Get the controller's edge advertised hostname to use as the default
+	defaultHostname, err := GetCtrlEdgeAdvertisedAddress()
 	if err != nil {
-		err := errors.Wrap(err, "Unable to get "+constants.CtrlWebAdvertisedAddressVarName)
+		err := errors.Wrap(err, "Unable to get "+constants.CtrlEdgeAdvertisedAddressVarName)
 		if err != nil {
 			return "", err
 		}
@@ -112,10 +104,10 @@ func GetCtrlEdgeApiAddress() (string, error) {
 }
 
 func GetCtrlEdgeApiPort() (string, error) {
-	// Get the controller's web advertised port to use as the default
-	defaultPort, err := GetCtrlWebAdvertisedPort()
+	// Get the controller's edge advertised port to use as the default
+	defaultPort, err := GetCtrlEdgeAdvertisedPort()
 	if err != nil {
-		err := errors.Wrap(err, "Unable to get "+constants.CtrlWebAdvertisedPortVarName)
+		err := errors.Wrap(err, "Unable to get "+constants.CtrlEdgeAdvertisedPortVarName)
 		if err != nil {
 			return "", err
 		}
@@ -124,7 +116,7 @@ func GetCtrlEdgeApiPort() (string, error) {
 	return getValueOrSetAndGetDefault(constants.CtrlEdgeApiPortVarName, defaultPort)
 }
 
-func GetCtrlWebInterfaceAddress() (string, error) {
+func GetCtrlEdgeInterfaceAddress() (string, error) {
 	// Get the controller's listener hostname to use as the default
 	defaultHostname, err := GetCtrlListenerAddress()
 	if err != nil {
@@ -134,25 +126,25 @@ func GetCtrlWebInterfaceAddress() (string, error) {
 		}
 	}
 
-	return getValueOrSetAndGetDefault(constants.CtrlWebInterfaceAddressVarName, defaultHostname)
+	return getValueOrSetAndGetDefault(constants.CtrlEdgeInterfaceAddressVarName, defaultHostname)
 }
 
-func GetCtrlWebInterfacePort() (string, error) {
-	// Get the controller's web advertised port to use as the default
-	defaultPort, err := GetCtrlWebAdvertisedPort()
+func GetCtrlEdgeInterfacePort() (string, error) {
+	// Get the controller's edge advertised port to use as the default
+	defaultPort, err := GetCtrlEdgeAdvertisedPort()
 	if err != nil {
-		err := errors.Wrap(err, "Unable to get "+constants.CtrlWebAdvertisedPortVarName)
+		err := errors.Wrap(err, "Unable to get "+constants.CtrlEdgeAdvertisedPortVarName)
 		if err != nil {
 			return "", err
 		}
 	}
 
-	return getValueOrSetAndGetDefault(constants.CtrlWebInterfacePortVarName, defaultPort)
+	return getValueOrSetAndGetDefault(constants.CtrlEdgeInterfacePortVarName, defaultPort)
 }
 
-func GetCtrlWebAdvertisedAddress() (string, error) {
+func GetCtrlEdgeAdvertisedAddress() (string, error) {
 
-	// Use hostname if web advertised address not set
+	// Use hostname if edge advertised address not set
 	hostname, err := os.Hostname()
 	if err != nil {
 		err := errors.Wrap(err, "Unable to get hostname")
@@ -161,11 +153,11 @@ func GetCtrlWebAdvertisedAddress() (string, error) {
 		}
 	}
 
-	return getValueOrSetAndGetDefault(constants.CtrlWebAdvertisedAddressVarName, hostname)
+	return getValueOrSetAndGetDefault(constants.CtrlEdgeAdvertisedAddressVarName, hostname)
 }
 
-func GetCtrlWebAdvertisedPort() (string, error) {
-	return getValueOrSetAndGetDefault(constants.CtrlEdgeApiPortVarName, constants.DefaultCtrlWebAdvertisedPort)
+func GetCtrlEdgeAdvertisedPort() (string, error) {
+	return getValueOrSetAndGetDefault(constants.CtrlEdgeAdvertisedPortVarName, constants.DefaultCtrlEdgeAdvertisedPort)
 }
 
 func GetZitiEdgeRouterPort() (string, error) {

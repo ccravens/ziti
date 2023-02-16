@@ -5,7 +5,7 @@ sleep 5
 
 . "${ZITI_SCRIPTS}/ziti-cli-functions.sh"
 
-if [[ "${ZITI_CTRL_WEB_ADVERTISED_ADDRESS-}" == "" ]]; then export ZITI_CTRL_WEB_ADVERTISED_ADDRESS="ziti-edge-controller"; fi
+if [[ "${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS-}" == "" ]]; then export ZITI_CTRL_EDGE_ADVERTISED_ADDRESS="ziti-edge-controller"; fi
 if [[ "${ZITI_EDGE_ROUTER_NAME-}" == "" ]]; then
   ZITI_EDGE_ROUTER_DESIRED_NAME="${ZITI_NETWORK-}-edge-router"
 else
