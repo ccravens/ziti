@@ -1022,7 +1022,7 @@ function createControllerSystemdFile {
   fi
 
   # Make sure necessary env variables are set
-  checkEnvVariable ZITI_HOME ZITI_BIN_DIR
+  _check_env_variable ZITI_HOME ZITI_BIN_DIR
   retVal=$?
   if [[ "${retVal}" != 0 ]]; then
     return 1
@@ -1080,7 +1080,7 @@ function createRouterSystemdFile {
     fi
   fi
 
-  checkEnvVariable ZITI_HOME ZITI_BIN_DIR
+  _check_env_variable ZITI_HOME ZITI_BIN_DIR
   retVal=$?
   if [[ "${retVal}" != 0 ]]; then
     return 1
@@ -1135,7 +1135,7 @@ function createControllerLaunchdFile {
   fi
 
   # Make sure necessary env variables are set
-  checkEnvVariable ZITI_HOME ZITI_BIN_DIR
+  _check_env_variable ZITI_HOME ZITI_BIN_DIR
   retVal=$?
   if [[ "${retVal}" != 0 ]]; then
     return 1
@@ -1209,7 +1209,7 @@ function createRouterLaunchdFile {
   fi
 
   # Make sure necessary env variables are set
-  checkEnvVariable ZITI_HOME ZITI_BIN_DIR
+  _check_env_variable ZITI_HOME ZITI_BIN_DIR
   retVal=$?
   if [[ "${retVal}" != 0 ]]; then
     return 1
@@ -1268,7 +1268,7 @@ function showLaunchdMessage {
 
 function createZacSystemdFile {
   local retVal output_file node_bin
-  checkEnvVariable ZITI_HOME
+  _check_env_variable ZITI_HOME
   retVal=$?
   if [[ "${retVal}" != 0 ]]; then
     return 1
