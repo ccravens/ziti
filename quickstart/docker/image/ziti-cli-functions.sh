@@ -75,7 +75,7 @@ function _dedupe_list {
     delimiter=","
   fi
 
-  echo "${list}" | tr "'${delimiter}'" '\n' | sort -u | xargs
+  echo "${list}" | tr "'${delimiter}'" '\n' | sort -u | xargs | tr ' ' ','
 }
 
 function _pki_client_server {
@@ -658,7 +658,7 @@ function createPki {
 
   # TODO: Remove (adding dupes on purpose)
   pki_allow_list_dns="${pki_allow_list_dns},${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS},localhost,${ZITI_NETWORK}"
-  _pki_client_server "${pki_allow_list_dns}" "${ZITI_PKI_CTRL_INTERMEDIATE_NAME}" "${pki_allow_list_ip}"
+  _pki_client_server "${pki_allow_list_dns}" "${ZITI_PKI_CTRL_INTERMEDIATE_NAME}" "${pki_allow_list_ip}" "${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS}"
   echo -e "$(GREEN "PKI generated successfully")"
   echo -e ""
 }
