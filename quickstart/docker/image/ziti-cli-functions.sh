@@ -423,54 +423,90 @@ function removeZitiEnvironment {
 }
 
 function startController {
-  local retVal log_file
+  local retVal log_file pid
   _check_env_variable ZITI_HOME ZITI_BIN_DIR ZITI_CTRL_NAME
   retVal=$?
   if [[ "${retVal}" != 0 ]]; then
     return 1
   fi
   log_file="${ZITI_HOME-}/${ZITI_CTRL_NAME}.log"
-  # shellcheck disable=SC2034
-  "${ZITI_BIN_DIR-}/ziti" controller run "${ZITI_HOME}/${ZITI_CTRL_NAME}.yaml" &> "${log_file}" &
-  ZITI_EXPRESS_CONTROLLER_PID=$!
-  echo -e "ziti-controller started as process id: $ZITI_EXPRESS_CONTROLLER_PID. log located at: $(BLUE "${log_file}")"
+  "${ZITI_BIN_DIR-}/ziti" controller run "${ZITI_HOME}/${ZITI_CTRL_NAME}.yaml" &> "${log_file}" 2>&1 &
+  pid=$!
+  echo -e "ziti-controller started as process id: ${pid}. log located at: $(BLUE "${log_file}")"
 }
 
+# Disable unused args shellcheck, the arg is optional
+#shellcheck disable=SC2120
 function stopController {
-  if [[ -n ${ZITI_EXPRESS_CONTROLLER_PID:-} ]]; then
-    kill "$ZITI_EXPRESS_CONTROLLER_PID"
-    # shellcheck disable=SC2181
+  local pid retVal
+  pid=${1-}
+  if [[ "${pid}" == "" ]]; then
+    _check_env_variable ZITI_CTRL_LISTENER_PORT
+    retVal=$?
+    if [[ "${retVal}" != 0 ]]; then
+      echo "You will need to source the ziti env file first so that the controller process can be found"
+      return 1
+    fi
+
+    # Get the pid listening on the controller port
+    pid=$(lsof -ti:"${ZITI_CTRL_LISTENER_PORT}")
+  fi
+
+  if [[ -n ${pid:-} ]]; then
+    kill "${pid}" > /dev/null 2>&1
     if [[ $? == 0 ]]; then
       echo "Controller stopped."
-      unset ZITI_EXPRESS_CONTROLLER_PID
       return 0
+    else
+      echo "ERROR: Something went wrong while trying to stop the controller."
+      return 1
     fi
   else
-    echo "ERROR: you can only stop a controller process that was started with startController" >&2
-    return 1
+    echo "No process found."
   fi
 }
 
 function startRouter {
-  local log_file="${ZITI_HOME}/${ZITI_EDGE_ROUTER_NAME}.log"
+  local pid retVal log_file
+  _check_env_variable ZITI_HOME ZITI_EDGE_ROUTER_NAME ZITI_BIN_DIR
+  retVal=$?
+  if [[ "${retVal}" != 0 ]]; then
+    return 1
+  fi
+  log_file="${ZITI_HOME}/${ZITI_EDGE_ROUTER_NAME}.log"
   "${ZITI_BIN_DIR}/ziti" router run "${ZITI_HOME}/${ZITI_EDGE_ROUTER_NAME}.yaml" > "${log_file}" 2>&1 &
-  ZITI_EXPRESS_EDGE_ROUTER_PID=$!
-  echo -e "Express Edge Router started as process id: $ZITI_EXPRESS_EDGE_ROUTER_PID. log located at: $(BLUE "${log_file}")"
+  pid=$!
+  echo -e "Express Edge Router started as process id: ${pid}. log located at: $(BLUE "${log_file}")"
 }
 
+# Disable unused args shellcheck, the arg is optional
+#shellcheck disable=SC2120
 function stopRouter {
-  if [[ -n ${ZITI_EXPRESS_EDGE_ROUTER_PID:-} ]]; then
-    # shellcheck disable=SC2015
-    kill "${ZITI_EXPRESS_EDGE_ROUTER_PID}" && {
-      echo "INFO: stopped router"
-      unset ZITI_EXPRESS_EDGE_ROUTER_PID
-    } || {
-      echo "ERROR: something went wrong with stopping the router(s)" >&2
+  local pid retVal
+  pid=${1-}
+  if [[ "${pid}" == "" ]]; then
+    _check_env_variable ZITI_EDGE_ROUTER_PORT
+    retVal=$?
+    if [[ "${retVal}" != 0 ]]; then
+      echo "You will need to source the ziti env file first so that the router process can be found"
       return 1
-    }
+    fi
+
+    # Get the pid listening on the controller port
+    pid=$(lsof -ti:"${ZITI_EDGE_ROUTER_PORT}")
+  fi
+
+  if [[ -n ${pid:-} ]]; then
+    kill "${pid}" > /dev/null 2>&1
+    if [[ $? == 0 ]]; then
+      echo "Router stopped."
+      return 0
+    else
+      echo "ERROR: Something went wrong while trying to stop the router." >&2
+      return 1
+    fi
   else
-    echo "ERROR: you can only stop a router process that was started with startRouter" >&2
-    return 1
+    echo "No process found."
   fi
 }
 
@@ -557,24 +593,9 @@ function getZiti {
 
 #  # Check if binaries already exist, if so, skip
 #  # TODO: Update this to prompt, "...already exist, do you want to update..." (may instead want to check version, see if it matches latest or is version v0.0.0 to indicate dev testing)
-#  "${ZITI_BIN_DIR}/ziti" -v > /dev/null
-#  retVal=$?
-#  if [[ "${retVal}" == 0 ]]; then
-#    echo -e "Binaries exist, using existing binaries"
-#    echo ""
-#    return 0
-#  fi
 
   echo -e "Getting OpenZiti binaries"
   echo ""
-
-  # Make the directory
-  mkdir -p "${ZITI_BIN_DIR}"
-  retVal=$?
-  if [[ "${retVal}" != 0 ]]; then
-    echo -e "  * $(RED "ERROR: An error occurred generating the path (${ZITI_BIN_DIR}")"
-    return 1
-  fi
 
   # Get the latest version unless a specific version is specified
   if [[ "${ZITI_VERSION_OVERRIDE-}" == "" ]]; then
@@ -599,6 +620,14 @@ function getZiti {
   ziti_binaries_file_abspath="${ZITI_BIN_DIR}/${ZITI_BINARIES_FILE}"
   # Check if they're already downloaded or maybe the user explicitly pointed ZITI_BIN_DIR to their local bins
   if ! test -f "${ZITI_BIN_DIR}/ziti"; then
+    # Make the directory
+    mkdir -p "${ZITI_BIN_DIR}"
+    retVal=$?
+    if [[ "${retVal}" != 0 ]]; then
+      echo -e "  * $(RED "ERROR: An error occurred generating the path (${ZITI_BIN_DIR}")"
+      return 1
+    fi
+
     # Get the download link
     zitidl="https://github.com/openziti/ziti/releases/download/${ZITI_BINARIES_VERSION-}/${ZITI_BINARIES_FILE}"
     echo -e 'Downloading '"$(BLUE "${zitidl}")"' to '"$(BLUE "${ziti_binaries_file_abspath}")"
@@ -929,9 +958,11 @@ function expressInstall {
   startController
   echo "waiting for the controller to come online to allow the edge router to enroll"
   _wait_for_controller
+  echo ""
 
   echo -e "$(PURPLE "******** Setting Up Edge Router ********")"
   zitiLogin
+  echo ""
   echo -e "----------  Creating an edge router policy allowing all identities to connect to routers with a $(GREEN "#public") attribute"
   "${ZITI_BIN_DIR-}/ziti" edge delete edge-router-policy allEdgeRouters > /dev/null
   "${ZITI_BIN_DIR-}/ziti" edge create edge-router-policy allEdgeRouters --edge-router-roles '#public' --identity-roles '#all' > /dev/null
@@ -939,14 +970,21 @@ function expressInstall {
   echo -e "----------  Creating a service edge router policy allowing all services to use $(GREEN "#public") edge routers"
   "${ZITI_BIN_DIR-}/ziti" edge delete service-edge-router-policy allSvcAllRouters > /dev/null
   "${ZITI_BIN_DIR-}/ziti" edge create service-edge-router-policy allSvcAllRouters --edge-router-roles '#all' --service-roles '#all' > /dev/null
+  echo ""
 
   echo "USING ZITI_EDGE_ROUTER_NAME: $ZITI_EDGE_ROUTER_NAME"
 
   addRouter "${ZITI_EDGE_ROUTER_NAME}" "public"
+  echo ""
 
   stopController
-  echo "Edge Router enrolled. Controller stopped."
+  echo "Edge Router enrolled."
 
+  echo ""
+  echo -e "$(GREEN "Congratulations. Express setup complete!")"
+  echo -e "Start your Ziti Controller by running the function: $(BLUE "startController")"
+  echo -e "Start your Ziti Edge Router by running : $(BLUE 'startRouter')"
+  echo ""
 }
 
 # Gets the latest Ziti binary (the process is different for latest vs older so unfortunately two functions are needed)
