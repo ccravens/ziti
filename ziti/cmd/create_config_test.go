@@ -9,6 +9,28 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
+)
+
+// These constants are hard-coded so that they may serve as a notifier. When the constants change in the source from
+// which they came, we may need to update any related documentation. If the constant is changed, the tests should fail
+// as they are expecting these hard-coded values. In which case, we update the hard-coded values and check any docs.
+const (
+	testDefaultCtrlEdgeAdvertisedPort         = "1280"
+	testDefaultCtrlListenerAddress            = "0.0.0.0"
+	testDefaultCtrlListenerPort               = "6262"
+	testDefaultBoltCheckInterval              = "30s"
+	testDefaultBoltCheckTimeout               = "20s"
+	testDefaultBoltCheckInitialDelay          = "30s"
+	testDefaultEdgeOptionsIdleTimeout         = "5000ms"
+	testDefaultEdgeOptionsReadTimeout         = "5000ms"
+	testDefaultEdgeOptionsWriteTimeout        = "100000ms"
+	testDefaultEdgeOptionsMinTLSVersion       = "TLS1.2"
+	testDefaultEdgeOptionsMaxTLSVersion       = "TLS1.3"
+	testDefaultEdgeIdentityEnrollmentDuration = time.Duration(180) * time.Minute
+	testDefaultEdgeIdentityEnrollmentStr      = "180m"
+	testDefaultEdgeRouterEnrollmentDuration   = time.Duration(180) * time.Minute
+	testDefaultEdgeRouterEnrollmentStr        = "180m"
 )
 
 func getZitiEnvironmentVariables() []string {

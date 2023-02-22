@@ -173,7 +173,7 @@ func TestBlankEdgeRouterNameBecomesHostname(t *testing.T) {
 }
 
 func TestDefaultZitiEdgeRouterListenerBindPort(t *testing.T) {
-	expectedDefaultPortStr := strconv.Itoa(TestDefaultRouterListenerPort)
+	expectedDefaultPortStr := strconv.Itoa(testDefaultRouterListenerPort)
 
 	// Make sure the related env vars are unset
 	_ = os.Unsetenv("ZITI_EDGE_ROUTER_LISTENER_BIND_PORT")

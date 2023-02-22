@@ -10,7 +10,7 @@ import (
 )
 
 // TEST constants
-var TestDefaultRouterListenerPort = 10080
+var testDefaultRouterListenerPort = 10080
 
 /* BEGIN Controller config template structure */
 
