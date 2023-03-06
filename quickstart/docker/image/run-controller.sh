@@ -27,9 +27,9 @@ else
 fi
 
 # initialize the database with the admin user:
-"${ZITI_BIN_DIR}/ziti-controller" edge init "${ZITI_HOME}/ziti-edge-controller.yaml" -u "${ZITI_USER}" -p "${ZITI_PWD}"
+"${ZITI_BIN_DIR}/ziti" controller edge init "${ZITI_HOME}/ziti-edge-controller.yaml" -u "${ZITI_USER}" -p "${ZITI_PWD}"
 
 # create a place for the internal db
 mkdir -p $ZITI_HOME/db
 
-"${ZITI_BIN_DIR}/ziti-controller" run "${ZITI_HOME}/ziti-edge-controller.yaml"
+"${ZITI_BIN_DIR}/ziti" controller run "${ZITI_HOME}/ziti-edge-controller.yaml"

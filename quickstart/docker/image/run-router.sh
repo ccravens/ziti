@@ -12,7 +12,7 @@ else
   ZITI_EDGE_ROUTER_DESIRED_NAME="${ZITI_EDGE_ROUTER_NAME}"
 fi
 if [[ "${ZITI_EDGE_ROUTER_PORT-}" == "" ]]; then export ZITI_EDGE_ROUTER_PORT="3022"; fi
-if [[ "${ZITI_EDGE_ROUTER_HOSTNAME}" == "" ]]; then export ZITI_EDGE_ROUTER_HOSTNAME="${ZITI_EDGE_ROUTER_NAME}${ZITI_DOMAIN_SUFFIX}"; fi
+if [[ "${ZITI_ROUTER_ADVERTISED_ADDRESS}" == "" ]]; then export ZITI_ROUTER_ADVERTISED_ADDRESS="${ZITI_EDGE_ROUTER_NAME}${ZITI_DOMAIN_SUFFIX}"; fi
 if [[ "${ZITI_EDGE_ROUTER_ROLES}" == "" ]]; then export ZITI_EDGE_ROUTER_ROLES="${ZITI_EDGE_ROUTER_NAME}"; fi
 
 . ${ZITI_HOME}/ziti.env
@@ -41,17 +41,17 @@ if [[ "$1" == "private" ]]; then
   createPrivateRouterConfig "${ZITI_EDGE_ROUTER_NAME}"
 fi
 
-echo "----------  Creating edge-router ${ZITI_EDGE_ROUTER_HOSTNAME}...."
-found=$(ziti edge list edge-routers 'name = "'"${ZITI_EDGE_ROUTER_HOSTNAME}"'"' | grep -c "${ZITI_EDGE_ROUTER_HOSTNAME}")
+echo "----------  Creating edge-router ${ZITI_ROUTER_ADVERTISED_ADDRESS}...."
+found=$(ziti edge list edge-routers 'name = "'"${ZITI_ROUTER_ADVERTISED_ADDRESS}"'"' | grep -c "${ZITI_ROUTER_ADVERTISED_ADDRESS}")
 if [[ found -gt 0 ]]; then
-  echo "----------  Found existing edge-router ${ZITI_EDGE_ROUTER_HOSTNAME}...."
+  echo "----------  Found existing edge-router ${ZITI_ROUTER_ADVERTISED_ADDRESS}...."
 else
-  "${ZITI_BIN_DIR}/ziti" edge create edge-router "${ZITI_EDGE_ROUTER_HOSTNAME}" -o "${ZITI_HOME}/${ZITI_EDGE_ROUTER_HOSTNAME}.jwt" -t -a "${ZITI_EDGE_ROUTER_ROLES}"
+  "${ZITI_BIN_DIR}/ziti" edge create edge-router "${ZITI_ROUTER_ADVERTISED_ADDRESS}" -o "${ZITI_HOME}/${ZITI_ROUTER_ADVERTISED_ADDRESS}.jwt" -t -a "${ZITI_EDGE_ROUTER_ROLES}"
   sleep 1
-  echo "---------- Enrolling edge-router ${ZITI_EDGE_ROUTER_HOSTNAME}...."
-  "${ZITI_BIN_DIR}/ziti-router" enroll "${ZITI_HOME}/${ZITI_EDGE_ROUTER_HOSTNAME}.yaml" --jwt "${ZITI_HOME}/${ZITI_EDGE_ROUTER_HOSTNAME}.jwt"
+  echo "---------- Enrolling edge-router ${ZITI_ROUTER_ADVERTISED_ADDRESS}...."
+  "${ZITI_BIN_DIR}/ziti-router" enroll "${ZITI_HOME}/${ZITI_ROUTER_ADVERTISED_ADDRESS}.yaml" --jwt "${ZITI_HOME}/${ZITI_ROUTER_ADVERTISED_ADDRESS}.jwt"
   echo ""
 fi
 
-"${ZITI_BIN_DIR}/ziti-router" run "${ZITI_HOME}/${ZITI_EDGE_ROUTER_NAME}.yaml" > "${ZITI_HOME}/ziti-${ZITI_EDGE_ROUTER_HOSTNAME}.log"
+"${ZITI_BIN_DIR}/ziti router" run "${ZITI_HOME}/${ZITI_ROUTER_ADVERTISED_ADDRESS}.yaml" > "${ZITI_HOME}/ziti-${ZITI_ROUTER_ADVERTISED_ADDRESS}.log"
 
