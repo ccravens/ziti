@@ -123,7 +123,7 @@ require (
 	github.com/openziti/transport/v2 v2.0.72 // indirect
 	github.com/openziti/x509-claims v1.0.3 // indirect
 	github.com/openziti/xweb/v2 v2.0.2 // indirect
-	github.com/openziti/ziti v0.27.8 // indirect
+	github.com/openziti/ziti v0.27.7 // indirect
 	github.com/openziti/ziti-db-explorer v1.1.1 // indirect
 	github.com/orcaman/concurrent-map/v2 v2.0.1 // indirect
 	github.com/parallaxsecond/parsec-client-go v0.0.0-20221025095442-f0a77d263cf9 // indirect
