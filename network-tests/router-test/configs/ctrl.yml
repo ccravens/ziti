@@ -16,19 +16,19 @@ ctrl:
     # set the maximum number of connect requests that are buffered and waiting to be acknowledged (1 to 5000, default 1000)
     #maxQueuedConnects:      50
 
-    # the maximum number of connects that have  begun hello synchronization (1 to 1000, default 16)
-    #maxOutstandingConnects: 100
+  # the maximum number of connects that have  begun hello synchronization (1 to 1000, default 16)
+  #maxOutstandingConnects: 100
 
-    # the number of milliseconds to wait before a hello synchronization fails and closes the connection (30ms to 60000ms, default: 1000ms)
-    #connectTimeoutMs:       3000
+  # the number of milliseconds to wait before a hello synchronization fails and closes the connection (30ms to 60000ms, default: 1000ms)
+  #connectTimeoutMs:       3000
 
-    # Sets the control channel write timeout. A write timeout will close the control channel, so the router will reconnect
-    #writeTimeout: 15s
+  # Sets the control channel write timeout. A write timeout will close the control channel, so the router will reconnect
+  #writeTimeout: 15s
 
-    # A listener address which will be sent to connecting routers in order to change their configured controller
-    # address. If defined, routers will update address configuration to immediately use the new address for future
-    # connections. The value of newListener must be resolvable both via DNS and validate via certificates
-    #newListener: tls:localhost:6262
+  # A listener address which will be sent to connecting routers in order to change their configured controller
+  # address. If defined, routers will update address configuration to immediately use the new address for future
+  # connections. The value of newListener must be resolvable both via DNS and validate via certificates
+  #newListener: tls:localhost:6262
 
 #events:
 #  jsonLogger:
