@@ -1,6 +1,6 @@
 module github.com/openziti/ziti
 
-go 1.19
+go 1.20
 
 require (
 	github.com/Jeffail/gabs v1.4.0
